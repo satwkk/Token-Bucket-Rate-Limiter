@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http/httputil"
 	"net/url"
+	"rate_limiter/config"
 	"rate_limiter/middleware"
 	"rate_limiter/services"
 
@@ -11,13 +12,24 @@ import (
 )
 
 func main() {
-	backendUrl, err := url.Parse("http://localhost:9001")
-	if err != nil {
-		log.Default().Fatalf("failed to parse backend URL: %v", err)
+	if ok := config.LoadEnv(); !ok {
+		log.Fatal("Error loading .env file")
 		return
 	}
 
-	serviceList := services.InitServices()
+	proxyConfig := config.LoadProxyConfig()
+	if proxyConfig == nil {
+		log.Fatal("Error loading proxy config")
+		return
+	}
+
+	backendUrl, err := url.Parse(proxyConfig.BackendUrl)
+	if err != nil {
+		log.Fatalf("failed to parse backend URL: %v", err)
+		return
+	}
+
+	serviceList := services.InitServices(proxyConfig)
 	if serviceList == nil {
 		log.Fatal("Failed to initialize services")
 		return

@@ -6,23 +6,23 @@ import (
 )
 
 type Bucket struct {
-	Tokens       float64
+	CurrentToken float64
 	LastSeenTime time.Time
 }
 
-func (b *Bucket) RefillAndConsume() bool {
+func (b *Bucket) RefillAndConsume(cfg *CacheConfig) bool {
 	now := time.Now()
 	elapsed := now.Sub(b.LastSeenTime).Seconds()
 
-	refillAmt := elapsed * 0.1
-	b.Tokens += refillAmt
+	refillAmt := elapsed * cfg.RefillRate
+	b.CurrentToken += refillAmt
 
-	b.Tokens = math.Min(b.Tokens, 100)
+	b.CurrentToken = math.Min(b.CurrentToken, cfg.MaxToken)
 
 	b.LastSeenTime = time.Now()
 
-	if b.Tokens > 1 {
-		b.Tokens -= 1
+	if b.CurrentToken > 1 {
+		b.CurrentToken -= 1.0
 		return true
 	}
 

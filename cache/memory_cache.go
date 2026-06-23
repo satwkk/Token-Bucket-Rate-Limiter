@@ -6,13 +6,20 @@ import (
 )
 
 type MemoryCache struct {
-	mu    sync.Mutex
-	cache map[string]Bucket
+	mu     sync.Mutex
+	cache  map[string]Bucket
+	config CacheConfig
 }
 
-func NewMemoryCache() Cache {
+type CacheConfig struct {
+	MaxToken   float64
+	RefillRate float64
+}
+
+func NewMemoryCache(config CacheConfig) Cache {
 	return &MemoryCache{
-		cache: make(map[string]Bucket),
+		cache:  make(map[string]Bucket),
+		config: config,
 	}
 }
 
@@ -23,14 +30,14 @@ func (c *MemoryCache) TryConsume(key string) (bool, float64, float64) {
 	bucket, ok := c.cache[key]
 	if !ok {
 		bucket = Bucket{
-			Tokens:       100,
+			CurrentToken: c.config.MaxToken,
 			LastSeenTime: time.Now(),
 		}
 	}
 
-	tokensBefore := bucket.Tokens
-	accepted := bucket.RefillAndConsume()
+	tokensBefore := bucket.CurrentToken
+	accepted := bucket.RefillAndConsume(&c.config)
 	c.cache[key] = bucket
 
-	return accepted, tokensBefore, bucket.Tokens
+	return accepted, tokensBefore, bucket.CurrentToken
 }
