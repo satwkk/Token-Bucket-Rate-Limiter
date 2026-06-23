@@ -37,8 +37,8 @@ func main() {
 	})
 
 	if err := server.Run(":8080"); err != nil {
-		log.Default().Fatalf("server run failed: %v", err)
+		log.Fatalf("server run failed: %v", err)
 		return
 	}
-	log.Default().Printf("running server on :8080")
+	log.Printf("running server on :8080")
 }
