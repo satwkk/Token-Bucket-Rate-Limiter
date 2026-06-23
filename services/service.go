@@ -14,7 +14,7 @@ type ServiceList struct {
 func InitServices(config *config.Config) *ServiceList {
 	serviceList := ServiceList{
 		Config: config,
-		CacheService: cache.NewMemoryCache(cache.CacheConfig{
+		CacheService: cache.NewRedisCache(cache.CacheConfig{
 			MaxToken:   config.MaxToken,
 			RefillRate: config.RefillRate,
 		}),
